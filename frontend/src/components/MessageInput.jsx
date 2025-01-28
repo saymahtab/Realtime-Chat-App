@@ -1,48 +1,55 @@
 import { Image, Send, X } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const MessageInput = () => {
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
-  const { sendMessage } = useChatStore();
+  const inputRef = useRef(null);
+  const { sendMessage, selectedUser } = useChatStore();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
 
-    if(!file.type.startsWith("image/")) {
-        toast.error("Please select an image file");
-        return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
     }
 
     const reader = new FileReader();
     reader.onloadend = () => {
-        setImagePreview(reader.result);
+      setImagePreview(reader.result);
     };
     reader.readAsDataURL(file);
   };
 
   const removeImage = () => {
     setImagePreview(null);
-    if(fileInputRef.current) fileInputRef.current.value = ""
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [selectedUser]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if(!text.trim() && !imagePreview) return;
+    if (!text.trim() && !imagePreview) return;
 
     try {
-        await sendMessage({
-            text: text.trim(),
-            image: imagePreview,
-        });
+      await sendMessage({
+        text: text.trim(),
+        image: imagePreview,
+      });
 
-        setText("");
-        setImagePreview(null);
-        if(fileInputRef.current) fileInputRef.current.value = "";
+      setText("");
+      setImagePreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
-        console.log("failed to send message", error)
+      console.log("failed to send message", error);
     }
   };
 
@@ -68,15 +75,28 @@ const MessageInput = () => {
         </div>
       )}
 
-      <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-        <div className="flex-1 flex gap-2">
+      <form onSubmit={handleSendMessage} className="flex items-center">
+        <div className="flex-1 flex">
+          {/* Gallery Icon */}
+          <button
+            type="button"
+            className={`btn bg-base-300 px-3 rounded-r-none py-[1.47rem] ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Image size={20} />
+          </button>
+
+          {/* Input Field */}
           <input
             type="text"
-            className="w-full input border-none focus:outline-none focus:border-none bg-base-300 rounded-sm input-md sm:input-md py-6 pl-6"
+            className="w-full input border-none focus:outline-none focus:border-none bg-base-300 rounded-none input-md sm:input-md py-6 pl-6"
             placeholder="Type a message..."
             value={text}
+            ref={inputRef}
             onChange={(e) => setText(e.target.value)}
           />
+
+          {/* File input for image selection */}
           <input
             type="file"
             accept="image/*"
@@ -84,18 +104,12 @@ const MessageInput = () => {
             ref={fileInputRef}
             onChange={handleImageChange}
           />
-          <button
-            type="button"
-            className={`hidden sm:flex btn btn-circle
-                     ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Image size={20} /> 
-          </button>
         </div>
+
+        {/* Send Button */}
         <button
           type="submit"
-          className="btn btn-sm btn-circle"
+          className=" bg-base-300 py-[0.82rem] rounded-r-md cursor-pointer px-3"
           disabled={!text.trim() && !imagePreview}
         >
           <Send size={22} />

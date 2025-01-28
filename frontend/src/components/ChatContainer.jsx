@@ -41,7 +41,7 @@ const ChatContainer = ({ onBack, isChatVisible }) => {
         <div className="flex-1 overflow-y-auto">
           <MessageSkeleton />
         </div>
-        <MessageInput />
+        <MessageInput  />
       </div>
     );
 
@@ -84,7 +84,11 @@ const ChatContainer = ({ onBack, isChatVisible }) => {
                   className="sm:max-w-[200px] rounded-md mb-2"
                 />
               )}
-              {message.text && <p>{message.text}</p>}
+              {message.text && (
+                <p className="whitespace-pre-wrap break-words overflow-hidden text-ellipsis">
+                  {message.text}
+                </p>
+              )}
             </div>
           </div>
         ))}
