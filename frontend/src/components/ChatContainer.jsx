@@ -6,51 +6,60 @@ import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 
-const ChatContainer = () => {
-  const { messages, isMessagesLoading, getMessages, selectedUser, subscribeToMessages, unsubscribeFromMessages } = useChatStore();
+const ChatContainer = ({ onBack, isChatVisible }) => {
+  const {
+    messages,
+    isMessagesLoading,
+    getMessages,
+    selectedUser,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  } = useChatStore();
 
-    const { authUser } = useAuthStore();
-    const messageEndRef = useRef(null);
+  const { authUser } = useAuthStore();
+  const messageEndRef = useRef(null);
 
   useEffect(() => {
-    getMessages(selectedUser._id);
-
-    subscribeToMessages();
+    if (selectedUser) {
+      getMessages(selectedUser._id);
+      subscribeToMessages();
+    }
 
     return () => unsubscribeFromMessages();
-  }, [getMessages, selectedUser._id, subscribeToMessages, unsubscribeFromMessages]);
+  }, [getMessages, selectedUser, subscribeToMessages, unsubscribeFromMessages]);
 
   useEffect(() => {
-    if(messageEndRef.current && messages){
-      messageEndRef.current.scrollIntoView({behavior: "smooth"})
+    if (messageEndRef.current && messages) {
+      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  
-  }, [messages])
-  
-
+  }, [messages]);
 
   if (isMessagesLoading)
     return (
-      <div className="flex-1 flex flex-col overflow-auto">
-        <ChatHeader />
-        <MessageSkeleton />
+      <div className="flex flex-col h-full">
+        <ChatHeader onBack={onBack} />
+        <div className="flex-1 overflow-y-auto">
+          <MessageSkeleton />
+        </div>
         <MessageInput />
       </div>
     );
 
-
   return (
-    <div className="flex-1 flex flex-col overflow-auto">
-      <ChatHeader />
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <ChatHeader onBack={onBack} isChatVisible={isChatVisible} />
 
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
           <div
             key={message._id}
-            className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
-            ref={messageEndRef}
+            className={`chat ${
+              message.senderId === authUser._id ? "chat-end" : "chat-start"
+            }`}
           >
-            <div className=" chat-image avatar">
+            <div className="chat-image avatar">
               <div className="size-10 rounded-full border">
                 <img
                   src={
@@ -79,9 +88,14 @@ const ChatContainer = () => {
             </div>
           </div>
         ))}
+        {/* Keep scroll at the bottom */}
+        <div ref={messageEndRef}></div>
       </div>
 
-      <MessageInput />
+      {/* Input */}
+      <div className="border-t border-base-300 bg-base-100">
+        <MessageInput />
+      </div>
     </div>
   );
 };

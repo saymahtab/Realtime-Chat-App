@@ -2,9 +2,17 @@ import { X } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 
-const ChatHeader = () => {
+const ChatHeader = ({ onBack, isChatVisible }) => {
   const { selectedUser, setSelectedUser } = useChatStore();
   const { onlineUsers } = useAuthStore();
+
+  const handleClose = () => {
+    if (isChatVisible) {
+      onBack();
+    } else {
+      setSelectedUser(null);
+    }
+  };
 
   return (
     <div className="p-2.5 border-b border-base-300">
@@ -13,7 +21,10 @@ const ChatHeader = () => {
           {/* Avatar */}
           <div className="avatar">
             <div className="size-10 rounded-full relative">
-              <img src={selectedUser.profilePic || "/avatar.png"} alt={selectedUser.fullName} />
+              <img
+                src={selectedUser.profilePic || "/avatar.png"}
+                alt={selectedUser.fullName}
+              />
             </div>
           </div>
 
@@ -27,11 +38,15 @@ const ChatHeader = () => {
         </div>
 
         {/* Close button */}
-        <button onClick={() => setSelectedUser(null)}>
+        <button
+          className="pr-2 cursor-pointer"
+          onClick={handleClose} // Handle back action
+        >
           <X />
         </button>
       </div>
     </div>
   );
 };
+
 export default ChatHeader;

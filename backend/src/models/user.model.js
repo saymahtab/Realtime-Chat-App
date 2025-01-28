@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        lastMessageTime: {
+            type: Date,
+            default: Date.now, // Default to the current time
+        },
     }, 
     { timestamps: true }
 );
